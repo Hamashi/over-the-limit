@@ -1,0 +1,24 @@
+{
+  "name": "over-the-limit",
+  "version": "1.0.0",
+  "description": "Discord bot to play a card game ",
+  "main": "bot.js",
+  "dependencies": {
+    "discord.js": "^12.1.1",
+    "dotenv": "^8.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hamashi/over-the-limit.git"
+  },
+  "author": "Hamashi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Hamashi/over-the-limit/issues"
+  },
+  "homepage": "https://github.com/Hamashi/over-the-limit#readme"
+}
