@@ -3,20 +3,26 @@
 exports.createGame = createGame;
 exports.getGame = getGame;
 exports.getMessageGameCreated = getMessageGameCreated;
+
 // imports
+const ERROR_CODES = require('../consts/error-codes.const.js');
 const Game = require('../class/Game.js');
 const blackCardService = require('./blackCard.service.js');
 const whiteCardService = require('./whiteCard.service.js');
 const playerService = require('./player.service.js');
 
 // functions
-function createGame(msg) {
-    const messageParts = msg.content.split(' ');
-    const options = messageParts.splice(0,2);
+function createGame(msg, gameList) {
+    // const messageParts = msg.content.split(' ');
+    // const options = messageParts.splice(0,2);
 
     // TODO : erreur gérer les erreurs des options
 
-    // TODO : erreur si il y a déjà une partie en cours sur ce channel text
+    const gameExists =  !!gameList.find(el => el.textualChannelId === msg.channel.id);
+    if(gameExists) {
+      let error = { error: ERROR_CODES.GAME_ALREADY_EXISTS }
+      return error;
+    }
 
     const language = 'fr';
     const hardcore = false;
@@ -35,7 +41,8 @@ function createGame(msg) {
 
     let newGame = new Game(msg.channel.id, voiceChannel.id, playerList, whiteCardList, blackCardList);
 
-    // console.log(newGame);
+    // TODO : erreur la game est null
+
     return newGame;
   }
 

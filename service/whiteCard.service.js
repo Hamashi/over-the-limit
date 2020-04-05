@@ -21,11 +21,9 @@ function dealingCards(nbCards, cardList) {
 }
 
 function getCardMessage(cardList) {
-    message = 'Voici les cartes de votre main : ';
-    console.log(cardList);
-    console.log(cardList.length);
-    for(let i; i < cardList.length; i++) {
-        message += i + '. ' + cardList[i].text;
+    let message = 'Voici les cartes de votre main : \n';
+    for(let i = 0; i < cardList.length; i++) {
+        message += '\n' + i + '. ' + cardList[i].text;
     }
 
     return message;

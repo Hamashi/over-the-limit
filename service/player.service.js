@@ -26,7 +26,6 @@ function createPlayers(voiceChannel, cardList) {
     const playerNumber = utilService.getRandomInt(playerList.length);
     playerList[playerNumber].lastWinner = true;
     sendCardsMessages(playerList);
-    // console.log(playerList);
     // TODO : erreur si player list undefined or null
     return playerList;
 }
@@ -35,8 +34,8 @@ function findLastWinner(playerList) {
     return playerList.find((el) => el.lastWinner);
 }
 
-function sendCardsMessages(playerList) {
+async function sendCardsMessages(playerList) {
     for(player of playerList) {
-        player.user.createDM().then(channel => channel.send(whiteCardService.getCardMessage(player.cards)));
+        await player.user.createDM().then(async channel => await channel.send(whiteCardService.getCardMessage(player.cards)));
     }
 }

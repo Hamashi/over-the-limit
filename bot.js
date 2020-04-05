@@ -35,9 +35,9 @@ client.on('message', msg => {
       msg.reply(helpService.createHelpMessage());
       break;
       case COMMAND.START :
-        const newGame = gameService.createGame(msg);
-        if(!newGame || newGame.error) {
-          msg.reply(newGame.error.message);
+        const newGame = gameService.createGame(msg, gameList);
+        if(newGame.error) {
+          msg.reply(getErrorMessage(newGame.error));
           return;
         }
         gameList.push(newGame);
@@ -52,7 +52,7 @@ client.on('message', msg => {
       case COMMAND.CHOOSE :
       break;
       default : 
-        msg.reply(ERROR_LIST.find(el => el.code === ERROR_CODES.INVALID_COMMAND).message);
+        msg.reply(getErrorMessage(ERROR_CODES.INVALID_COMMAND));
       return;
     }
   }
@@ -65,4 +65,14 @@ function findCommand(commandStr) {
   }
   const commandObj = COMMAND_LIST.find(el => el.name === commandStr || el.aliasList.includes(commandStr));
   return commandObj;
+}
+
+function getErrorMessage(code) {
+  const message = ERROR_LIST.find(el => el.code === code).message
+
+  if(!message) {
+    return 'Unknown Error';
+  }
+
+  return message;
 }
