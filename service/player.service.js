@@ -1,7 +1,8 @@
 // exports
 exports.createPlayers = createPlayers;
 exports.findLastWinner = findLastWinner;
-
+exports.findPlayerById = findPlayerById;
+exports.sendCardsMessages = sendCardsMessages;
 // imports
 const Player = require('../class/Player.js');
 const whiteCardService = require('./whiteCard.service.js');
@@ -25,7 +26,6 @@ function createPlayers(voiceChannel, cardList) {
     // choosing first player
     const playerNumber = utilService.getRandomInt(playerList.length);
     playerList[playerNumber].lastWinner = true;
-    sendCardsMessages(playerList);
     // TODO : erreur si player list undefined or null
     return playerList;
 }
@@ -36,6 +36,10 @@ function findLastWinner(playerList) {
 
 async function sendCardsMessages(playerList) {
     for(player of playerList) {
-        await player.user.createDM().then(async channel => await channel.send(whiteCardService.getCardMessage(player.cards)));
+        await player.user.createDM().then(async channel => await channel.send(whiteCardService.getCardMessage(player.cardList)));
     }
+}
+
+function findPlayerById(playerList, id) {
+    return playerList.find((el) => el.user.id === id);
 }

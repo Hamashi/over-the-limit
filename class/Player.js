@@ -1,6 +1,6 @@
-module.exports = function (user, score, cards, lastWinner) {
+module.exports = function (user, score, cardList, lastWinner) {
         this.user = user;
         this.score = score;
-        this.cards = cards;
+        this.cardList = cardList;
         this.lastWinner = lastWinner;
 }

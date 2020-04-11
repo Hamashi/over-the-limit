@@ -3,13 +3,16 @@
 exports.createGame = createGame;
 exports.getGame = getGame;
 exports.getMessageGameCreated = getMessageGameCreated;
-
+exports.playCard = playCard;
+exports.chooseCard = chooseCard;
+exports.getScoreMessage = getScoreMessage;
 // imports
 const ERROR_CODES = require('../consts/error-codes.const.js');
 const Game = require('../class/Game.js');
 const blackCardService = require('./blackCard.service.js');
 const whiteCardService = require('./whiteCard.service.js');
 const playerService = require('./player.service.js');
+const PlayedCard = require('../class/PlayedCard');
 
 // functions
 function createGame(msg, gameList) {
@@ -40,14 +43,13 @@ function createGame(msg, gameList) {
     // TODO : erreur gérer celles qui viennent de playerList
 
     let newGame = new Game(msg.channel.id, voiceChannel.id, playerList, whiteCardList, blackCardList);
-
     // TODO : erreur la game est null
 
     return newGame;
   }
 
   function getGame(gameList, channelId) {
-    return gameList.find((el) => el.channelId === channelId);
+    return gameList.find((el) => el.textualChannelId === channelId);
   }
 
   function findVoiceChannel(msg, voiceChannelName) {
@@ -72,3 +74,28 @@ function createGame(msg, gameList) {
     return message;
   }
   
+  function playCard(msg, game, cardNumber) {
+    const player = playerService.findPlayerById(game.playerList, msg.author.id);
+    game.turn.playedCardList.push(new PlayedCard(player, player.cardList[cardNumber]));
+
+    player.cardList.splice(cardNumber, 1);
+    player.cardList.concat(whiteCardService.dealingCards(1, game.whiteCardList));
+  }
+
+  function chooseCard(game, cardNumber) {
+    playerService.findLastWinner(game.playerList).lastWinner = false;
+    const playedCard = game.turn.playedCardList[cardNumber];
+    playedCard.player.lastWinner = true;
+    playedCard.player.score ++;
+  }
+
+  function getScoreMessage(playerList) {
+    let message = 'Voici les scores de la partie :\n';
+    playerList.sort((a, b) => a.score - b.score);
+
+    for(const player of playerList) {
+      message += player.user.username + ' : ' + player.score + ' points\n';
+    }
+
+    return message;
+  }

@@ -25,6 +25,6 @@ function getCardMessage(cardList) {
     for(let i = 0; i < cardList.length; i++) {
         message += '\n' + i + '. ' + cardList[i].text;
     }
-
+    message += '\n';
     return message;
 }
