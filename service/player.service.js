@@ -4,6 +4,8 @@ exports.findLastWinner = findLastWinner;
 exports.findPlayerById = findPlayerById;
 exports.sendCardsMessages = sendCardsMessages;
 // imports
+const PROPERTIES = require('../properties.js');
+const ERROR_CODES = require('../consts/error-codes.const.js');
 const Player = require('../class/Player.js');
 const whiteCardService = require('./whiteCard.service.js');
 const utilService = require('./utils.service.js');
@@ -12,15 +14,15 @@ const utilService = require('./utils.service.js');
 function createPlayers(voiceChannel, cardList) {
     const playerList = [];
 
-    // TODO : erreur channel vide
-    // TODO : erreur minimum de joueur
-    // TODO : property : minimum number of players
+    if(voiceChannel.members.length < PROPERTIES.MINIMUM_PLAYERS) {
+        return {error: ERROR_CODES.NOT_ENOUGH_PLAYERS};
+    }
 
     // creating list of members
     for (member of voiceChannel.members) {
         const user = member[1].user
-        playerList.push(new Player(user, 0, whiteCardService.dealingCards(10, cardList), false));
-        // TODO : property : number of cards at the begining
+        playerList.push(new Player(user, 0, whiteCardService.dealingCards(PROPERTIES.CARD_NUMBER, cardList), false));
+        
     }
 
     // choosing first player

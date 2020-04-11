@@ -5,6 +5,7 @@ exports.replaceTextBlackCard = replaceTextBlackCard;
 
 // imports
 const BLACK_CARDS = require('../consts/black-cards.const.js');
+const PROPERTIES = require('../properties.js');
 const utilsService = require('./utils.service.js');
 
 // functions
@@ -18,6 +19,5 @@ function drawBlackCard(blackCardList) {
 }
 
 function replaceTextBlackCard(blackCard, text) {
-    return blackCard.text.replace('{x}', text);
-    // TODO : mettre {x} en properties
+    return blackCard.text.replace(PROPERTIES.JOKER_CHARACTER, text);
 }

@@ -7,6 +7,7 @@ const COMMAND_LIST = require('./consts/command-list.const.js');
 const COMMAND = require('./consts/command.const.js');
 const ERROR_LIST = require('./consts/error-list.const.js');
 const ERROR_CODES = require('./consts/error-codes.const.js');
+const PROPERTIES = require('./properties.js');
 // discord
 const Discord = require('discord.js');
 const client = new Discord.Client();
@@ -113,8 +114,8 @@ async function gameTurn(msg, game) {
   game.turn = new Turn();
   const blackCard = blackCardService.drawBlackCard(game.blackCardList);
   let message = 'Début du tour de jeu, ' + playerService.findLastWinner(game.playerList).user.username + ' va décider de qui a été le plus drôle.\n';
-  message += 'La phrase à compléter est "' + blackCardService.replaceTextBlackCard(blackCard, '____________') + '" vous avez 1m30 pour jouer';
-  // TODO : property '____________'
+  message += 'La phrase à compléter est "' + blackCardService.replaceTextBlackCard(blackCard, PROPERTIES.NEUTRAL_TEXT) + '" vous avez 1m30 pour jouer';
+
   await msg.channel.send(message);
 
   setTimeout(async () => {
@@ -134,15 +135,12 @@ async function gameTurn(msg, game) {
       if(!game.lastTurn) {
           gameTurn(msg, game);
       } else {
-        // TODO : détruire la game
         const scoreMessage = gameService.getScoreMessage(game.playerList);
         msg.channel.send(scoreMessage);
 
         this.gameList = this.gameList.filter((el) => el.textualChannelId != game.textualChannelId);
       }
       
-    }, 15000);
-  // TODO : property temps
-  }, 30000);
-  // TODO : property temps
+    }, PROPERTIES.DURATION_CHOOSE);
+  }, PROPERTIES.DURATION_TURN);
 }
