@@ -28,7 +28,7 @@ module.exports = [
 	new BlackCard('Désolé les gens, je viens juste de {x}.', false, 'fr'),
 	new BlackCard('C\'est quoi ce bruit ? {x}', false, 'fr'),
 	new BlackCard('Qu\'est ce qu\'on peut trouver par milliers au paradis ? {x}', false, 'fr'),
-	new BlackCard('Le meilleur ami des filles, c'est {x}.', false, 'fr'),
+	new BlackCard('Le meilleur ami des filles, c\'est {x}.', false, 'fr'),
 	new BlackCard('Quel est le plaisir coupable de Batman ? {x}', false, 'fr'),
 	new BlackCard('Les psychanalystes s\'alarment devant l\'émergence de la phobie de {x} chez la plupart de leurs patients.', false, 'fr'),
 	new BlackCard('Quand j\'étais sous acide, {x} se changeait en {y}.', false, 'fr'),

@@ -3,6 +3,7 @@ exports.createPlayers = createPlayers;
 exports.findLastWinner = findLastWinner;
 exports.findPlayerById = findPlayerById;
 exports.sendCardsMessages = sendCardsMessages;
+exports.isAlreadyPlayed = isAlreadyPlayed;
 // imports
 const PROPERTIES = require('../properties.js');
 const ERROR_CODES = require('../consts/error-codes.const.js');
@@ -28,7 +29,7 @@ function createPlayers(voiceChannel, cardList) {
     // choosing first player
     const playerNumber = utilService.getRandomInt(playerList.length);
     playerList[playerNumber].lastWinner = true;
-    // TODO : erreur si player list undefined or null
+    
     return playerList;
 }
 
@@ -44,4 +45,8 @@ async function sendCardsMessages(playerList) {
 
 function findPlayerById(playerList, id) {
     return playerList.find((el) => el.user.id === id);
+}
+
+function isAlreadyPlayed(playedCardList, id) {
+    return !!playedCardList.find((el) => el.player.user.id === id);
 }

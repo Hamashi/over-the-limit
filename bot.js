@@ -16,6 +16,7 @@ const helpService = require('./service/help.service.js');
 const gameService = require('./service/game.service.js');
 const playerService = require('./service/player.service.js');
 const blackCardService = require('./service/blackCard.service.js');
+const utilsService = require('./service/utils.service.js');
 // classes
 const Turn = require('./class/Turn.js');
 // END IMPORTS
@@ -36,7 +37,6 @@ client.on('message', msg => {
   if (messageParts[0] === TRIGGER_COMMAND) {
     const commandOjb = findCommand(messageParts[1]);
     let game;
-    let cardNumber;
     switch(commandOjb) {
       case COMMAND.HELP : 
       msg.reply(helpService.createHelpMessage());
@@ -50,38 +50,71 @@ client.on('message', msg => {
         gameList.push(newGame);
         msg.reply(gameService.getMessageGameCreated(newGame));
         gameTurn(msg, newGame);
+        // TODO : laisser du temps au startup
       break;
       case COMMAND.END : 
         game = gameService.getGame(gameList, msg.channel.id);
-        // TODO : erreur si on ne trouve pas la game
+        if(!game) {
+          msg.reply(getErrorMessage(ERROR_CODES.GAME_NOT_FOUND));
+          return;
+        }
         game.lastTurn = true;
         msg.reply('Ce tour de jeu sera le dernier.');
       break;
       case COMMAND.PLAY :
-        // TODO : erreur si celui qui choisit le plus drôle joue
-        // TODO : erreur si il a déjà joué
         game = gameService.getGame(gameList, msg.channel.id);
-        // TODO : erreur si on ne trouve pas la game
-        cardNumber = parseInt(messageParts[2], 10);
-        // TODO : erreur si l'argument est incorrect (pas un chiffre entre 0 et 9 inclus)
+        if(!game) {
+          msg.reply(getErrorMessage(ERROR_CODES.GAME_NOT_FOUND));
+          return;
+        }
+        const player = playerService.findPlayerById(game.playerList, msg.author.id);
+        if(!player) {
+          msg.reply(getErrorMessage(ERROR_CODES.PLAYER_NOT_FOUND));
+          return;
+        }
+        if(player.lastWinner || playerService.isAlreadyPlayed(game.turn.playedCardList, msg.author.id)) {
+          msg.reply(getErrorMessage(ERROR_CODES.PLAYER_NOT_ALLOWED));
+          return;
+        }
+        const cardNumber = parseInt(messageParts[2], 10);
+        if(cardNumber >= PROPERTIES.CARD_NUMBER || isNaN(cardNumber)) {
+          msg.reply(getErrorMessage(ERROR_CODES.INVALID_ARGUMENT));
+          return;
+        }
         gameService.playCard(msg, game, cardNumber);
       break;
       case COMMAND.SCORE :
         game = gameService.getGame(gameList, msg.channel.id);
-        // TODO : erreur si on ne trouve pas la game
-
+        if(!game) {
+          msg.reply(getErrorMessage(ERROR_CODES.GAME_NOT_FOUND));
+          return;
+        }
         const scoreMessage = gameService.getScoreMessage(game.playerList);
         msg.reply(scoreMessage);
       break;
       case COMMAND.CHOOSE :
-        // TODO : erreur si quelqu'un n'a pas le droit de choisir
-        // TODO : erreur si c'est pas la bonne phase du tour
-        game = gameService.getGame(gameList, msg.channel.id);
-        // TODO : erreur si on ne trouve pas la game
-        cardNumber = parseInt(messageParts[2], 10);
-        // TODO : erreur si l'argument est incorrect (pas un chiffre entre 0 et et le nombre de joueurs-1)
 
-        gameService.chooseCard(game, cardNumber);
+        game = gameService.getGame(gameList, msg.channel.id);
+        if(!game) {
+          msg.reply(getErrorMessage(ERROR_CODES.GAME_NOT_FOUND));
+          return;
+        }
+        const chooser = playerService.findPlayerById(game.playerList, msg.author.id);
+        if (!chooser.lastWinner) {
+          msg.reply(getErrorMessage(ERROR_CODES.PLAYER_NOT_ALLOWED));
+          return;
+        }
+        if (game.turn.phase !== Turn.PHASE_CHOICE) {
+          msg.reply(getErrorMessage(ERROR_CODES.COMMAND_NOT_ALLOWED));
+          return;
+        }
+        const playedCardNumber = parseInt(messageParts[2], 10);
+        if(playedCardNumber >= game.turn.playedCardList.length || isNaN(cardNumber)) {
+          msg.reply(getErrorMessage(ERROR_CODES.INVALID_ARGUMENT));
+          return;
+        }
+
+        gameService.chooseCard(game,playedCardNumber);
       break;
       default : 
         msg.reply(getErrorMessage(ERROR_CODES.INVALID_COMMAND));
@@ -100,13 +133,13 @@ function findCommand(commandStr) {
 }
 
 function getErrorMessage(code) {
-  const message = ERROR_LIST.find(el => el.code === code).message
+  const message = ERROR_LIST.find(el => el.code === code);
 
   if(!message) {
-    return 'Unknown Error';
+    return code;
   }
 
-  return message;
+  return message.message;
 }
 
 async function gameTurn(msg, game) {
@@ -118,22 +151,25 @@ async function gameTurn(msg, game) {
 
   await msg.channel.send(message);
 
+  // TODO : si tout le monde a joué, on passe à la suite
   setTimeout(async () => {
     const messageFin = 'Fin du tour de jeu voici les cartes qui ont été jouées : ';
 
     await msg.channel.send(messageFin);
-
+    utilsService.shuffle(game.turn.playedCardList);
     for (let i = 0; i<game.turn.playedCardList.length; i++) {
       const whiteCard = game.turn.playedCardList[i].card;
-
+      
       const messageCarte = i + '. ' + blackCardService.replaceTextBlackCard(blackCard, whiteCard.text);
 
       await msg.channel.send(messageCarte);
     }
     game.turn.phase = Turn.PHASE_CHOICE;
     setTimeout(() => {
+      // TODO : si personne n'a gagné on lance un vote général
       if(!game.lastTurn) {
           gameTurn(msg, game);
+          return;
       } else {
         const scoreMessage = gameService.getScoreMessage(game.playerList);
         msg.channel.send(scoreMessage);

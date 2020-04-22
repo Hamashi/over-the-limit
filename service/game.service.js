@@ -23,7 +23,7 @@ function createGame(msg, gameList) {
 
     const gameExists =  !!gameList.find(el => el.textualChannelId === msg.channel.id);
     if(gameExists) {
-      let error = { error: ERROR_CODES.GAME_ALREADY_EXISTS }
+      let error = { error: ERROR_CODES.GAME_ALREADY_EXISTS };
       return error;
     }
 
@@ -33,17 +33,25 @@ function createGame(msg, gameList) {
 
     const voiceChannel = findVoiceChannel(msg, voiceChannelName);
 
-    // TODO : erreur si le voiceChannel n'existe pas
-
-    const whiteCardList = whiteCardService.getWhiteCardList(language, hardcore); // TODO : erreur, c'est vide
-    const blackCardList = blackCardService.getBlackCardList(language, hardcore); // TODO : erreur, c'est vide
+    if(!voiceChannel) {
+      let error = { error: ERROR_CODES.VOICECHANNEL_NOT_FOUND };
+      return error;
+    }
+    const whiteCardList = whiteCardService.getWhiteCardList(language, hardcore);
+    const blackCardList = blackCardService.getBlackCardList(language, hardcore);
 
     const playerList = playerService.createPlayers(voiceChannel, whiteCardList);
 
-    // TODO : erreur gérer celles qui viennent de playerList
+    if(!playerList || !blackCardList || !whiteCardList) {
+      let error = { error: ERROR_CODES.UNKNOWN_ERROR };
+      return error;
+    }
 
     let newGame = new Game(msg.channel.id, voiceChannel.id, playerList, whiteCardList, blackCardList);
-    // TODO : erreur la game est null
+    if(newGame) {
+      let error = { error: ERROR_CODES.UNKNOWN_ERROR };
+      return error;
+    }
 
     return newGame;
   }
@@ -79,7 +87,11 @@ function createGame(msg, gameList) {
     game.turn.playedCardList.push(new PlayedCard(player, player.cardList[cardNumber]));
 
     player.cardList.splice(cardNumber, 1);
-    player.cardList.concat(whiteCardService.dealingCards(1, game.whiteCardList));
+    const drawnCardList = whiteCardService.dealingCards(1, game.whiteCardList);
+
+    for(const drawnCard of drawnCardList) {
+      player.cardList.push(drawnCard);
+    }
   }
 
   function chooseCard(game, cardNumber) {
@@ -91,7 +103,7 @@ function createGame(msg, gameList) {
 
   function getScoreMessage(playerList) {
     let message = 'Voici les scores de la partie :\n';
-    playerList.sort((a, b) => a.score - b.score);
+    playerList.sort((a, b) => b.score - a.score);
 
     for(const player of playerList) {
       message += player.user.username + ' : ' + player.score + ' points\n';
